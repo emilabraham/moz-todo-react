@@ -1,26 +1,55 @@
+import React, { useState } from "react";
 import Todo from "./components/Todo";
 import Form from "./components/Form";
 import FilterButton from "./components/FilterButton";
+import { nanoid } from "nanoid";
 
 function App(props) {
-  const taskList = props.tasks.map(task =>
+  const [tasks, setTasks] = useState(props.tasks);
+  const tasksNoun = tasks.length === 1 ? "task" : "tasks";
+  const headingText = `${tasks.length} ${tasksNoun} remaining`;
+
+  function addTask(name) {
+    const newTask = { id: "todo-" + nanoid(), name: name, completed: false };
+    setTasks([...tasks, newTask]);
+  }
+
+  function deleteTask(id) {
+    setTasks(tasks.filter(task => task.id !== id));
+  }
+
+  function toggleTaskCompleted(id) {
+    const updatedTask = tasks.map(task => {
+      if (task.id === id) {
+        task.completed = !task.completed;
+      }
+      return task;
+    });
+
+    setTasks(updatedTask);
+  }
+
+  const taskList = tasks.map(task =>
     <Todo
       id={task.id}
       name={task.name}
       completed={task.completed}
       key={task.id}
+      toggleTaskCompleted={toggleTaskCompleted}
+      deleteTask={deleteTask}
     />);
+
   return (
     <div className="todoapp stack-large">
       <h1>TodoMatic</h1>
-      <Form />
+      <Form addTask={addTask} />
       <div className="filters btn-group stack-exception">
         <FilterButton />
         <FilterButton />
         <FilterButton />
       </div>
       <h2 id="list-heading">
-        3 tasks remaining
+        {headingText}
       </h2>
       <ul
         role="list"
@@ -28,9 +57,6 @@ function App(props) {
         aria-labelledby="list-heading"
       >
         {taskList}
-        {/* <Todo name="Eat" completed={true} id="todo-0" />
-        <Todo name="Sleep" completed={false} id="todo-1" />
-        <Todo name="Repeat" completed={false} id="todo-2" /> */}
       </ul>
     </div>
   );
